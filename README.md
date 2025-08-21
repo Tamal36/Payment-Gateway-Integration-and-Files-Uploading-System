@@ -1,93 +1,322 @@
-# Payment Gateway Integration and Files Uploading System
+# GatewayAndFile - Payment Gateway Integration and File Upload System
 
+## Project Overview
 
+GatewayAndFile is a Django-based web application that integrates payment gateway functionality with a file upload and processing system. The application allows users to register, make payments through aamarPay payment gateway, and upload files after successful payment. The uploaded files are processed asynchronously using Celery to count words and update status.
 
-## Getting started
+## Features
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+- **User Authentication**: Registration, login, and profile management
+- **Payment Integration**: Seamless integration with aamarPay payment gateway
+- **File Upload System**: Upload and process text (.txt) and Word (.docx) files
+- **Asynchronous Processing**: Background processing of uploaded files using Celery
+- **Activity Tracking**: Logging of user activities and file processing status
+- **RESTful API**: Comprehensive API endpoints for all functionality
+- **Frontend Interface**: User-friendly web interface for all features
+- **JWT Authentication**: Secure API access with JWT tokens
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## Tech Stack
 
-## Add your files
+### Backend
+- **Django 5.2.5**: Web framework
+- **Django REST Framework 3.16.1**: API development
+- **Celery 5.5.3**: Asynchronous task processing
+- **Redis 6.4.0**: Message broker for Celery
+- **JWT Authentication**: Using djangorestframework-simplejwt 5.5.1
+- **python-docx 1.2.0**: For processing Word documents
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+### Frontend
+- **Bootstrap 5**: CSS framework for responsive design
+- **JavaScript**: For interactive UI components
+
+### Infrastructure
+- **Docker & Docker Compose**: Containerization and orchestration
+- **SQLite**: Database (for development)
+
+## Project Structure
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/FrostSight/payment-gateway-integration-and-files-uploading-system.git
-git branch -M main
-git push -uf origin main
+GatewayAndFile/
+├── .env                    # Environment variables
+├── Dockerfile              # Docker configuration
+├── GatewayAndFile/         # Main project directory
+│   ├── __init__.py
+│   ├── asgi.py
+│   ├── celery.py           # Celery configuration
+│   ├── settings.py         # Project settings
+│   ├── urls.py             # Main URL routing
+│   └── wsgi.py
+├── db.sqlite3              # SQLite database
+├── docker-compose.yml      # Docker Compose configuration
+├── manage.py               # Django management script
+├── payments/               # Payment app
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── migrations/
+│   ├── models.py           # Payment models
+│   ├── serializers.py      # API serializers
+│   ├── tests.py
+│   ├── urls.py             # Payment URLs
+│   └── views.py            # Payment views
+├── requirements.txt        # Python dependencies
+├── templates/              # HTML templates
+│   ├── base.html           # Base template
+│   ├── payments/           # Payment templates
+|   |    ├── login.html
+|   |    ├── transactions.html
+│   └── uploads/            # Upload templates
+|        ├── activity.html
+|        ├── files.html
+|        ├── upload.html
+├── uploads/                # Upload app
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── migrations/
+│   ├── models.py           # Upload models
+│   ├── serializers.py      # API serializers
+│   ├── tasks.py            # Celery tasks
+│   ├── tests.py
+│   ├── urls.py             # Upload URLs
+│   └── views.py            # Upload views
+└── uploadsFiles/           # Directory for uploaded files
 ```
 
-## Integrate with your tools
+## Installation and Setup
 
-- [ ] [Set up project integrations](https://gitlab.com/FrostSight/payment-gateway-integration-and-files-uploading-system/-/settings/integrations)
+### Local Setup
 
-## Collaborate with your team
+1. **Clone the repository**
+   ```bash
+   git clone https://gitlab.com/FrostSight/payment-gateway-integration-and-files-uploading-system
+   cd GatewayAndFile
+   ```
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+2. **Create and activate a virtual environment**
+   ```bash
+   # Windows
+   python -m venv venv
+   venv\Scripts\activate
+   
+   # Linux/Mac
+   python -m venv venv
+   source venv/bin/activate
+   ```
 
-## Test and Deploy
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-Use the built-in continuous integration in GitLab.
+4. **Create .env file**
+   Create a `.env` file in the project root with the following content:
+   ```
+   SECRET_KEY='your-secret-key'
+   DEBUG=True
+   
+   STORE_ID='aamarpaytest'
+   SIGNATURE_KEY='dbb74894e82415a2f7ff0ec3a97e4183'
+   AAMARPAY_ENDPOINT='https://sandbox.aamarpay.com/jsonpost.php'
+   ```
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+5. **Run migrations**
+   ```bash
+   python manage.py migrate
+   ```
 
-***
+6. **Create a superuser**
+   ```bash
+   python manage.py createsuperuser
+   ```
 
-# Editing this README
+7. **Start Redis server**
+   ```bash
+   # Install Redis first if not already installed
+   # Windows: Download and install from https://github.com/microsoftarchive/redis/releases
+   # Linux: sudo apt-get install redis-server
+   
+   # Start Redis server
+   # Windows: redis-server
+   # Linux: sudo service redis-server start
+   ```
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+8. **Start Celery worker**
+   ```bash
+   # Windows
+   celery -A GatewayAndFile worker -l info --pool=solo
+   
+   # Linux/Mac
+   celery -A GatewayAndFile worker -l info
+   ```
 
-## Suggestions for a good README
+9. **Run the development server**
+   ```bash
+   python manage.py runserver
+   ```
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+10. **Access the application**
+    - Web Interface: http://127.0.0.1:8000/
+    - Admin Interface: http://127.0.0.1:8000/admin/
 
-## Name
-Choose a self-explaining name for your project.
+### Docker Setup
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+1. **Build and start the containers**
+   ```bash
+   docker-compose up -d --build
+   ```
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+2. **Run migrations**
+   ```bash
+   docker-compose exec web python manage.py migrate
+   ```
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+3. **Create a superuser**
+   ```bash
+   docker-compose exec web python manage.py createsuperuser
+   ```
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+4. **Access the application**
+    - Web Interface: http://localhost:8000/
+    - Admin Interface: http://localhost:8000/admin/
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+## API Endpoints
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+### Authentication
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+- **JWT Token**: `POST /api/auth/token/`
+  - Request: `{"username": "user", "password": "pass"}`
+  - Response: `{"access": "token", "refresh": "token"}`
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+- **Refresh Token**: `POST /api/auth/token/refresh/`
+  - Request: `{"refresh": "token"}`
+  - Response: `{"access": "token"}`
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+### User Management
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+- **Register User**: `POST /api/register/`
+  - Request: `{"username": "user", "email": "user@example.com", "password": "pass"}`
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+- **Get User Profile**: `GET /api/profile/`
+  - Requires Authentication
+
+### Payment
+
+- **Initiate Payment**: `POST /api/initiate-payment/`
+  - Requires Authentication
+  - Response: `{"payment_url": "https://sandbox.aamarpay.com/..."}`
+
+- **Payment Success**: `GET/POST /api/payment/success/`
+  - Called by aamarPay after successful payment
+
+- **Payment Failed**: `GET/POST /api/payment/failed/`
+  - Called by aamarPay after failed payment
+
+- **Payment Cancelled**: `GET /api/payment/cancelled/`
+  - Called by aamarPay after cancelled payment
+
+- **Get User Transactions**: `GET /api/payment/transactions/`
+  - Requires Authentication
+
+### File Upload
+
+- **Upload File**: `POST /api/upload/`
+  - Requires Authentication and successful payment
+  - Form data: `{"file": file_object}`
+
+- **List Files**: `GET /api/files/`
+  - Requires Authentication
+
+- **List Activity**: `GET /api/activity/`
+  - Requires Authentication
+
+### Frontend URLs
+
+- **Login**: `/api/login-view/`
+- **Transaction History**: `/api/transactions-view/`
+- **Upload File**: `/api/upload-view/`
+- **List Files**: `/api/files-view/`
+- **Activity Log**: `/api/activity-view/`
+
+## Validation/Business Logic
+
+### Payment Flow
+
+1. User must be authenticated to initiate payment
+2. Payment amount is fixed at 100 BDT
+3. Transaction ID is generated as a UUID
+4. Payment status is tracked (Initiated, Success, Failed)
+5. Payment verification is done by calling aamarPay's verification API
+
+### File Upload
+
+1. User must have at least one successful payment to upload files
+2. Only .txt and .docx files are allowed
+3. File size is limited to 5MB (configured in settings)
+4. Files are processed asynchronously using Celery
+5. Word count is calculated for each file
+6. Processing status is tracked (Processing, Completed, Failed)
+
+## Testing the Payment Flow with aamarPay Sandbox
+
+1. **Register a new user** or login with an existing user
+2. **Navigate to the dashboard** and click on "Initiate Payment"
+3. **You will be redirected to the aamarPay sandbox payment page**
+4. **Use the following test card details**:
+   - Card Number: 1111 1111 1111 1111
+   - Expiry Date: Any future date
+   - CVV: Any 3-digit number
+5. **Complete the payment process**
+6. **You will be redirected back to the application** with payment status
+7. **After successful payment**, you can upload files
+
+## Celery and Redis Setup
+
+### Redis Configuration
+
+The application uses Redis as the message broker for Celery. The Redis connection is configured in `settings.py`:
+
+```python
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/1"
+CELERY_RESULT_BACKEND = 'django-db'
+```
+
+### Celery Configuration
+
+Celery is configured in `GatewayAndFile/celery.py`. It automatically discovers tasks in all installed apps.
+
+### Running Celery
+
+- **Local**: `celery -A GatewayAndFile worker -l info`
+- **Docker**: Celery worker is automatically started by Docker Compose
+
+### Celery Tasks
+
+The main Celery task is `process_file` in `uploads/tasks.py`. It processes uploaded files to count words and update status.
+
+## Additional Information
+
+### Security Considerations
+
+- JWT tokens are used for API authentication
+- Sensitive information is stored in environment variables
+- CSRF protection is enabled for form submissions
+- File uploads are validated for type and size
+
+### Error Handling
+
+- API endpoints return appropriate HTTP status codes and error messages
+- Celery tasks have retry mechanisms for handling failures
+- Activity logs track user actions and system events
+
+### Future Improvements
+
+- Add more payment gateways
+- Implement file type validation using content inspection
+- Add user roles and permissions
+- Implement file sharing functionality
+- Add more comprehensive test coverage
 
 ## License
-For open source projects, say how it is licensed.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+This project is licensed under the MIT License - see the LICENSE file for details.
