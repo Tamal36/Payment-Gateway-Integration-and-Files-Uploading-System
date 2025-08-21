@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}User Activity{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-dark text-white">
+        <h4 class="mb-0">Your Activity Log</h4>
+    </div>
+    <div class="card-body">
+        {% if logs %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Action</th>
+                        <th>Metadata</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{ log.action }}</td>
+                        <td>
+                            {% if log.metadata %}
+                                {% for key, value in log.metadata.items %}
+                                    <strong>{{ key|title }}:</strong> {{ value }}<br>
+                                {% endfor %}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td>{{ log.timestamp|date:"Y-m-d H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            No activity logs found.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

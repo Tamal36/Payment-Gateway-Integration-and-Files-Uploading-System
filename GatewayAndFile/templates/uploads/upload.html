@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}File Upload{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white text-center">
+                    <h4 class="mb-0">Upload a Document</h4>
+                </div>
+                <div class="card-body p-4">
+                    {% if has_paid %}
+                    <p class="lead text-center mb-4">You have a successful payment. You may now upload your file.</p>
+                    <form id="uploadForm" action="{% url 'upload-file' %}" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                        <div class="mb-3">
+                            <label for="file" class="form-label">Select File (.txt or .docx)</label>
+                            <input type="file" class="form-control" id="file" name="file" required accept=".txt,.docx">
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">Upload File</button>
+                        </div>
+                    </form>
+                    <div id="uploadStatus" class="mt-4 text-center"></div>
+                    {% else %}
+                    <div class="alert alert-warning text-center" role="alert">
+                        <h4 class="alert-heading">Payment Required!</h4>
+                        <p>Please pay ৳100 BDT to unlock the file upload feature.</p>
+                        <hr>
+                        <p class="mb-0">You can initiate payment from your dashboard or a separate payment page.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const uploadForm = document.getElementById('uploadForm');
+        if (uploadForm) {
+            uploadForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const form = e.target;
+                const formData = new FormData(form);
+                const statusDiv = document.getElementById('uploadStatus');
+                const csrfToken = form.querySelector('[name="csrfmiddlewaretoken"]').value;
+                
+                statusDiv.innerHTML = `<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>`;
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
+                    credentials: 'include'
+                })
+                .then(response => {
+                    if (response.status === 401) {
+                        return {
+                            ok: false,
+                            data: { error: "Authentication credentials were not provided. Please log in again." }
+                        };
+                    } else if (response.status === 403) { // Handle 403 (Payment Required) from the API view
+                        return {
+                            ok: false,
+                            data: { error: 'Payment required before uploading.' }
+                        };
+                    } else if (response.status === 400) { // Handle validation errors 
+                            ok: false,
+                            data: data
+                        }));
+                    } else if (response.status === 201) {
+                        return response.json().then(data => ({
+                            ok: true,
+                            data: data
+                        }));
+                    } else {
+                        return response.text().then(text => ({ // Fallback for other unexpected statuses
+                            ok: false,
+                            data: { error: text || 'An unexpected error occurred.' }
+                        }));
+                    }
+                })
+                .then(result => {
+                    if (result.ok) {
+                        statusDiv.innerHTML = `<div class="alert alert-success" role="alert">File uploaded successfully! Processing in the background.</div>`;
+                    } else {
+                        let errorMessage = result.data.error || 'An unexpected error occurred.';
+                        if (result.data && result.data.non_field_errors) {
+                            errorMessage = result.data.non_field_errors.join(', ');
+                        }
+                        statusDiv.innerHTML = `<div class="alert alert-danger" role="alert">Error: ${errorMessage}</div>`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Network Error:', error);
+                    statusDiv.innerHTML = `<div class="alert alert-danger" role="alert">A network error occurred. Please try again.</div>`;
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}
